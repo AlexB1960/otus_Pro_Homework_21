@@ -1,0 +1,39 @@
+- name: Run tests
+  hosts: localhost
+  connection: local
+  become: yes
+  tasks:
+    - name: Get current working directory
+      ansible.builtin.command: pwd
+      register: pwd_result
+
+    - name: Ensure Allure results directory exists
+      ansible.builtin.file:
+        path: "{{ pwd_result.stdout }}/allure-results"
+        state: directory
+
+    - name: Ensure JUnit results directory exists
+      ansible.builtin.file:
+        path: "{{ pwd_result.stdout }}/surefire-reports"
+        state: directory
+
+    - name: Run tests
+      ignore_errors: true
+      community.docker.docker_container:
+        name: "ui_tests-{{ profile }}"
+        image: "ui_tests:1.1"
+        state: started
+        network_mode: host
+        mounts:
+          - type: bind
+            source: "/var/run/docker.sock"
+            target: "/var/run/docker.sock"
+          - type: bind
+            source: "/var/jenkins_home{{ pwd_result.stdout }}/allure-results"
+            target: /ui_tests/target/allure-results
+          - type: bind
+            source: "/var/jenkins_home{{ pwd_result.stdout }}/surefire-reports"
+            target: /ui_tests/target/surefire-reports
+        env:
+          PROFILE: "{{ profile }}"
+        detach: false
