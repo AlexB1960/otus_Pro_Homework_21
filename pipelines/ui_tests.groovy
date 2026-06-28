@@ -52,7 +52,7 @@ timeout(120) {
                  def summary = junit testResults: "**/surefire-reports/*.xml" //забрали общую статистику, из которой далее составили части сообщения
                  String message = """Test Summary
                                         |JOB: ${env.JOB_NAME}
-                                        |${currentBuild.desciption}
+                                        |${currentBuild.description}
                                         |
                                         |Total: ${summary.totalCount}
                                         |Passed: ${summary.passCount}
@@ -69,7 +69,7 @@ timeout(120) {
                          httpRequest consoleLogResponseBody: true, //в консоль запишем ответ, успешно или неуспешно отправилось сообщение
                                  contentType: "APPLICATION_JSON",
                                  httpMode: "POST",
-                                 requestBody:"{\"text\":\"$message\",\"channel\":\"@$username\",\"username\":\"Jenkins\"}",
+                                 requestBody:"{\"text\":\"$message\",\"channel\":\"$username\",\"username\":\"Jenkins\"}",
                                  url: "${env.WEBHOOK}" //куда отправляем сообщение
                      }
 
